@@ -4,7 +4,9 @@ from contextlib import asynccontextmanager
 
 from sqlalchemy import text
 
+from app.api.routes.deliveries import router as deliveries_router
 from app.api.routes.endpoints import router as endpoints_router
+from app.api.routes.ingest import router as ingest_router
 
 from app.database.session import engine
 from app.database.models import WebhookEndpoint
@@ -22,7 +24,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.include_router(deliveries_router)
 app.include_router(endpoints_router)
+app.include_router(ingest_router)
 
 @app.get("/")
 async def root():
