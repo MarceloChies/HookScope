@@ -1,4 +1,6 @@
 import httpx
+
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.database.models.attempt import DeliveryAttempt
@@ -11,9 +13,23 @@ async def forward_delivery(
         destination_url: str,
         db:Session,
 ) -> DeliveryAttempt:
+    
+    last_attempt_number = db.scalar(
+        select(
+            func.coalesce(
+                func.max(DeliveryAttempt.attempt_number),
+                0,
+            )
+        ).where(
+            DeliveryAttempt.delivery_id == delivery.id,
+        )
+    )
+
+    next_attempt_number = last_attempt_number + 1
+
     attempt = DeliveryAttempt(
         delivery_id= delivery.id,
-        attempt_number=1,
+        attempt_number= next_attempt_number,
     )
 
     try:

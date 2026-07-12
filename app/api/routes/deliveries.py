@@ -5,7 +5,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database.dependencies import get_db
+from app.database.models.attempt import DeliveryAttempt
 from app.database.models.delivery import Delivery
+
+from app.schemas.attempt import DeliveryAttemptResponse
 from app.schemas.delivery import DeliveryResponse
 
 router = APIRouter(
@@ -43,3 +46,32 @@ def get_delivery(
         )
     
     return delivery
+
+@router.get(
+    "/{delivery_id}/attempts",
+    response_model=list[DeliveryAttemptResponse],
+)
+def list_delivery_attempts(
+    delivery_id: uuid.UUID,
+    db: Session = Depends(get_db),
+):
+    delivery = db.get(
+        Delivery,
+        delivery_id,
+    )
+
+    if delivery is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Delivery not found",
+        )
+    
+    query = (
+        select(DeliveryAttempt)
+        .where(DeliveryAttempt.delivery_id == delivery_id)
+        .order_by(DeliveryAttempt.attempt_number.asc())
+    )
+
+    attempts = db.scalars(query).all()
+
+    return attempts
