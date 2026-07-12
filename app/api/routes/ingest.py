@@ -7,6 +7,8 @@ from app.database.dependencies import get_db
 from app.database.models.delivery import Delivery
 from app.database.models.endpoint import WebhookEndpoint
 
+from app.services.forwarding import forward_delivery
+
 router = APIRouter(
     prefix="/hooks",
     tags=["Webhook Ingestion"],
@@ -40,9 +42,20 @@ async def recieve_webhook(
     db.commit()
     db.refresh(delivery)
 
+    attempt= None
+
+    if endpoint.destination_url:
+        attempt = await forward_delivery(
+            delivery=delivery,
+            destination_url= endpoint.destination_url,
+            db=db,
+        )
+
     return{
-        "message": "Webhook recieved",
+        "message": "Webhook received",
         "delivery_id": str(delivery.id),
+        "forwarded": attempt.succeeded if attempt else None,
+        "destination_status": attempt.status_code if attempt else None,
     }
 
 

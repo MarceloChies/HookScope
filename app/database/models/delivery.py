@@ -23,6 +23,10 @@ class Delivery(Base):
     method: Mapped[str] = mapped_column(String(10))
     headers: Mapped[dict[str, Any]] = mapped_column(JSON)
     payload: Mapped[dict[str, Any]] = mapped_column(JSON)
+    attempts: Mapped[list["DeliveryAttempt"]] = relationship(
+        back_populates="delivery",
+        cascade="all, delete-orphan",
+    )
     received_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
