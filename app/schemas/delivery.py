@@ -11,7 +11,6 @@ class DeliveryResponse(BaseModel):
     headers: dict[str, Any]
     payload: dict[str, Any]
     received_at: datetime
-
     model_config = ConfigDict(
         from_attributes=True,
     )

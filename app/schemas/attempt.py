@@ -12,7 +12,6 @@ class DeliveryAttemptResponse(BaseModel):
     response_body: str |None
     error_message: str | None
     attempted_at: datetime
-
     model_config = ConfigDict(
         from_attributes=True,
     )

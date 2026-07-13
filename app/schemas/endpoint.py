@@ -13,5 +13,8 @@ class EndpointResponse(BaseModel):
     token: str
     destination_url: str | None
     created_at: datetime
-
     model_config = ConfigDict(from_attributes=True)
+
+class EndpointUpdate(BaseModel):
+    name : str | None = None
+    destination_url: str | None = None
