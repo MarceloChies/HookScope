@@ -64,3 +64,9 @@ def test_get_unknown_delivery_reutnrs_404(client: TestClient):
     response = client.get(f"/deliveries/{unknown_delivery_id}")
     assert response.status_code == 404
 
+def test_retry_returns_404(client:TestClient):
+    unknown_delivery_id = uuid.uuid4()
+    response = client.post(
+        f"/deliveries/{unknown_delivery_id}/retry"
+    )
+    assert response.status_code == 404
