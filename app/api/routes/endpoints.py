@@ -99,3 +99,27 @@ def update_endpoint(
     db.refresh(endpoint)
 
     return endpoint
+
+@router.delete(
+    "/{endpoint_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_endpoint(
+    endpoint_id:  uuid.UUID,
+    db: Session = Depends(get_db),
+):
+    endpoint = db.get(
+        WebhookEndpoint,
+        endpoint_id
+        )
+
+    if endpoint is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail = "Endpoint not found",
+        )
+    
+    db.delete(endpoint)
+    db.commit()
+
+    return None

@@ -21,9 +21,17 @@ router = APIRouter(
 
 @router.get("", response_model=list[DeliveryResponse])
 def list_deliveries(
+    endpoint_id: uuid.UUID | None = None,
     db: Session = Depends(get_db),
 ):
-    query = select(Delivery).order_by(
+    query = select(Delivery)
+
+    if endpoint_id is not None:
+        query = query.where(
+            Delivery.endpoint_id == endpoint_id,
+        )
+    
+    query = query.order_by(
         Delivery.received_at.desc(),
     )
 
