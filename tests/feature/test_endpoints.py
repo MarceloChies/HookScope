@@ -50,3 +50,17 @@ def test_deleting_unknown_endpoint_returns_404(client: TestClient):
     response = client.delete(f"/endpoints/{uuid.uuid4()}")
 
     assert response.status_code == 404
+
+def test_endpoint_stats_count_received_delivery(client: TestClient):
+    _, _, endpoint = create_saved_delivery(client)
+
+    response = client.get(
+        f"/endpoints/{endpoint['id']}/stats"
+    )
+    assert response.status_code == 200
+
+    stats = response.json()
+
+    assert stats["total_deliveries"] == 1
+    assert stats["total_attempts"] == 0
+    assert stats["last_received_at"] is not None

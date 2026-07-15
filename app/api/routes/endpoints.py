@@ -3,12 +3,14 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.database.dependencies import get_db
+from app.database.models.attempt import DeliveryAttempt
+from app.database.models.delivery import Delivery
 from app.database.models.endpoint import WebhookEndpoint
-from app.schemas.endpoint import EndpointCreate, EndpointResponse, EndpointUpdate
+from app.schemas.endpoint import EndpointCreate, EndpointResponse, EndpointStatsResponse, EndpointUpdate
 
 router = APIRouter(
     prefix="/endpoints", 
@@ -123,3 +125,66 @@ def delete_endpoint(
     db.commit()
 
     return None
+
+@router.get(
+    "/{endpoint_id}/stats",
+    response_model=EndpointStatsResponse,
+)
+def get_endpoint_stats(
+    endpoint_id: uuid.UUID,
+    db: Session = Depends(get_db),
+):
+    endpoint = db.get(WebhookEndpoint, endpoint_id)
+
+    if endpoint is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Endpoint not found",
+        )
+    
+    total_deliveries = db.scalar(
+        select(func.count(Delivery.id)).where(
+            Delivery.endpoint_id == endpoint_id,
+        )
+    ) or 0
+
+    total_attempts = db.scalar(
+        select(func.count(DeliveryAttempt.id))
+        .join(Delivery)
+        .where(
+            Delivery.endpoint_id == endpoint_id,
+        )
+    ) or 0
+
+    successful_attempts = db.scalar(
+        select(func.count(DeliveryAttempt.id))
+        .join(Delivery)
+        .where(
+            Delivery.endpoint_id == endpoint_id,
+            DeliveryAttempt.succeeded.is_(True),
+        )
+    ) or 0
+
+    failed_attempts = db.scalar(
+        select(func.count(DeliveryAttempt.id))
+        .join(Delivery)
+        .where(
+            Delivery.endpoint_id == endpoint_id,
+            DeliveryAttempt.succeeded.is_(False),
+        )
+    ) or 0
+
+    last_received_at = db.scalar(
+        select(func.max(Delivery.received_at)).where(
+            Delivery.endpoint_id == endpoint_id,
+        )
+    )
+
+    return{
+        "endpoint_id": endpoint_id,
+        "total_deliveries": total_deliveries,
+        "total_attempts": total_attempts,
+        "successful_attempts": successful_attempts,
+        "failed_attempts": failed_attempts,
+        "last_received_at": last_received_at,
+    }

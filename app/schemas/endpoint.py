@@ -18,3 +18,11 @@ class EndpointResponse(BaseModel):
 class EndpointUpdate(BaseModel):
     name : str | None = None
     destination_url: str | None = None
+
+class EndpointStatsResponse(BaseModel):
+    endpoint_id: uuid.UUID
+    total_deliveries: int
+    total_attempts: int
+    successful_attempts: int
+    failed_attempts: int
+    last_received_at: datetime | None
