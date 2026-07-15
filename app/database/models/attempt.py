@@ -28,7 +28,7 @@ class DeliveryAttempt(Base):
 
     succeeded: Mapped[bool] = mapped_column(
         Boolean,
-        nullable=True,
+        nullable=False,
     )
 
     status_code: Mapped[int | None] = mapped_column(

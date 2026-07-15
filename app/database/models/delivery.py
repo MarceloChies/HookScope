@@ -32,4 +32,10 @@ class Delivery(Base):
         server_default=func.now(),
     )
 
+    next_retry_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        index=True,
+    )
+
     endpoint =  relationship("WebhookEndpoint", back_populates="deliveries")
