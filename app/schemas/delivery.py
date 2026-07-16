@@ -10,6 +10,8 @@ class DeliveryResponse(BaseModel):
     method: str
     headers: dict[str, Any]
     payload: dict[str, Any]
+    contract_valid: bool | None = None
+    contract_issues: list[dict[str,str]] | None = None
     received_at: datetime
     model_config = ConfigDict(
         from_attributes=True,

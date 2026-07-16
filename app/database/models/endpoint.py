@@ -1,7 +1,9 @@
 import uuid
+
+from typing import Any
 from datetime import datetime
 
-from sqlalchemy import DateTime, String, Uuid, func
+from sqlalchemy import DateTime, JSON, String, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.session import Base
@@ -23,6 +25,10 @@ class WebhookEndpoint(Base):
     destination_url: Mapped[str | None] = mapped_column(
         String(2048),
         nullable= True,
+    )
+    contract_baseline: Mapped[dict[str, Any] | None] = mapped_column(
+        JSON,
+        nullable=True,
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

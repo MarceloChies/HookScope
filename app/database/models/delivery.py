@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import DateTime, ForeignKey, JSON, String, Uuid, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, JSON, String, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.session import Base
@@ -23,6 +23,14 @@ class Delivery(Base):
     method: Mapped[str] = mapped_column(String(10))
     headers: Mapped[dict[str, Any]] = mapped_column(JSON)
     payload: Mapped[dict[str, Any]] = mapped_column(JSON)
+    contract_valid: Mapped[bool | None] = mapped_column(
+        Boolean,
+        nullable=True,
+    )
+    contract_issues: Mapped[list[dict[str,str]]| None] = mapped_column(
+        JSON, 
+        nullable=True,
+    )
     attempts: Mapped[list["DeliveryAttempt"]] = relationship(
         back_populates="delivery",
         cascade="all, delete-orphan",

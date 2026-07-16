@@ -7,6 +7,7 @@ from app.database.dependencies import get_db
 from app.database.models.delivery import Delivery
 from app.database.models.endpoint import WebhookEndpoint
 
+from app.services.contract_watch import compare_payload_contract
 from app.services.forwarding import forward_delivery
 
 router = APIRouter(
@@ -30,12 +31,24 @@ async def recieve_webhook(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Webhook endpoint not found",
         )
-    
+
+    contract_valid = None
+    contract_issues = None
+
+    if endpoint.contract_baseline is not None:
+        contract_issues = compare_payload_contract(
+            baseline=endpoint.contract_baseline,
+            payload=payload,
+        )
+    contract_valid = not contract_issues
+
     delivery = Delivery(
         endpoint_id = endpoint.id,
         method=request.method,
         headers=sanitize_headers(request.headers),
         payload=payload,
+        contract_valid=contract_valid,
+        contract_issues=contract_issues,
     )
 
     db.add(delivery)

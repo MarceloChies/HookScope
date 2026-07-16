@@ -10,7 +10,7 @@ from app.database.dependencies import get_db
 from app.database.models.attempt import DeliveryAttempt
 from app.database.models.delivery import Delivery
 from app.database.models.endpoint import WebhookEndpoint
-from app.schemas.endpoint import EndpointCreate, EndpointResponse, EndpointStatsResponse, EndpointUpdate
+from app.schemas.endpoint import ContractBaselineUpdate, EndpointCreate, EndpointResponse, EndpointStatsResponse, EndpointUpdate
 
 router = APIRouter(
     prefix="/endpoints", 
@@ -188,3 +188,30 @@ def get_endpoint_stats(
         "failed_attempts": failed_attempts,
         "last_received_at": last_received_at,
     }
+
+@router.put(
+    "/{endpoint_id}/contract",
+    response_model=EndpointResponse,
+)
+def set_endpoint_contract(
+    endpoint_id: uuid.UUID,
+    data: ContractBaselineUpdate,
+    db: Session = Depends(get_db),
+):
+    endpoint = db.get(
+        WebhookEndpoint,
+        endpoint_id,
+    )
+
+    if endpoint is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Endpoint not found",
+        )
+    
+    endpoint.contract_baseline = data.contract_baseline
+
+    db.commit()
+    db.refresh(endpoint)
+
+    return endpoint
