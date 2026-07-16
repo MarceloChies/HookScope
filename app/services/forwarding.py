@@ -1,8 +1,11 @@
 import httpx
 
+from datetime import datetime, timedelta, timezone
+
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.services.retry_policy import get_retry_delay_seconds, should_retry
 from app.database.models.attempt import DeliveryAttempt
 from app.database.models.delivery import Delivery
 
@@ -52,6 +55,22 @@ async def forward_delivery(
     except httpx.RequestError as error:
         attempt.succeeded = False
         attempt.error_message = str(error)
+
+    if attempt.succeeded:
+        delivery.next_retry_at = None
+    
+    elif should_retry(attempt):
+        delay_seconds = get_retry_delay_seconds(
+            attempt.attempt_number,
+        )
+        if delay_seconds is not None:
+            delivery.next_retry_at =(
+                datetime.now(timezone.utc)
+                + timedelta(seconds=delay_seconds)
+            )
+
+    else:
+        delivery.next_retry_at = None
 
     db.add(attempt)
     db.commit()
