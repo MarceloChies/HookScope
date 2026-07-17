@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict
 class EndpointCreate(BaseModel):
     name: str
     destination_url: str | None = None
+    duplicate_detection_enabled: bool = False
 
 class EndpointResponse(BaseModel):
     id: uuid.UUID
@@ -16,6 +17,7 @@ class EndpointResponse(BaseModel):
     destination_url: str | None
     created_at: datetime
     contract_baseline: dict[str, Any] | None = None
+    duplicate_detection_enabled: bool | None = None
     model_config = ConfigDict(from_attributes=True)
 
 class EndpointUpdate(BaseModel):
@@ -29,6 +31,7 @@ class EndpointStatsResponse(BaseModel):
     successful_attempts: int
     failed_attempts: int
     last_received_at: datetime | None
+    duplicate_detection_enabled: bool
 
 class ContractBaselineUpdate(BaseModel):
     contract_baseline: dict[str, Any]

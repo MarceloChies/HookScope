@@ -39,3 +39,7 @@ class WebhookEndpoint(Base):
         back_populates="endpoint",
         cascade="all, delete-orphan",
     )
+
+    duplicate_detection_enabled: Mapped[bool] = mapped_column(
+        default=False,
+    )

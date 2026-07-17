@@ -46,4 +46,15 @@ class Delivery(Base):
         index=True,
     )
 
+    payload_fingerprint: Mapped[str | None] = mapped_column(
+        String(64),
+        nullable=True,
+        index=True,
+    )
+
+    duplicate_of_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("deliveries.id"),
+        nullable=True,
+    )
+
     endpoint =  relationship("WebhookEndpoint", back_populates="deliveries")
