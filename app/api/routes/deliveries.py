@@ -1,7 +1,7 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.database.dependencies import get_db
@@ -126,3 +126,30 @@ async def retry_delivery(
 
     return attempt
 
+router.get(
+    "/{delivery_id}/duplicates"
+)
+def list_delivery_duplicates(
+        delivery_id: uuid.UUID,
+        db: Session= Depends(get_db),
+):
+    delivery = db.get(Delivery, delivery_id)
+
+    if delivery is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail = "Delivery not found",
+        )
+    
+    original_delivery_id = delivery.duplicate_of_id or delivery.id
+
+    query = (
+        select(Delivery).where(
+            or_(
+                Delivery.id == original_delivery_id,
+                Delivery.duplicate_of_id== original_delivery_id,
+            )
+        ).order_by(Delivery.received_at.asc())
+    )
+
+    return db.scalars(query).all()
