@@ -1,5 +1,6 @@
 import {type SubmitEvent, useEffect, useState} from 'react'
 import './App.css'
+import hookscopelogo from './assets/hookscopelogo.png'
 
 type Endpoint = {
   id: string
@@ -93,7 +94,8 @@ async function createEndpoint(event: SubmitEvent<HTMLFormElement>) {
     <main className="app-shell">
       <header className="topbar">
         <a className="brand" href="/">
-          HookScope
+          <img className="brand-logo" src={hookscopelogo} alt="" />
+          <span>HookScope</span>
         </a>
 
         <span className="environment">Local development</span>
