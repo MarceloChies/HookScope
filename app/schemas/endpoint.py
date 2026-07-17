@@ -17,12 +17,13 @@ class EndpointResponse(BaseModel):
     destination_url: str | None
     created_at: datetime
     contract_baseline: dict[str, Any] | None = None
-    duplicate_detection_enabled: bool | None = None
+    duplicate_detection_enabled: bool
     model_config = ConfigDict(from_attributes=True)
 
 class EndpointUpdate(BaseModel):
     name : str | None = None
     destination_url: str | None = None
+    duplicate_detection_enabled: bool | None=None
 
 class EndpointStatsResponse(BaseModel):
     endpoint_id: uuid.UUID

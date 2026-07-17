@@ -29,6 +29,7 @@ def create_endpoint(
         name=data.name,
         destination_url=data.destination_url,
         token=secrets.token_urlsafe(24),
+        duplicate_detection_enabled =data.duplicate_detection_enabled,
     )
 
     db.add(endpoint)
@@ -187,6 +188,7 @@ def get_endpoint_stats(
         "successful_attempts": successful_attempts,
         "failed_attempts": failed_attempts,
         "last_received_at": last_received_at,
+        "duplicate_detection_enabled": endpoint.duplicate_detection_enabled,
     }
 
 @router.put(
