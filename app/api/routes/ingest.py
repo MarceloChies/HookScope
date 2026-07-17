@@ -9,6 +9,7 @@ from app.database.models.endpoint import WebhookEndpoint
 
 from app.services.contract_watch import compare_payload_contract
 from app.services.forwarding import forward_delivery
+from app.services.idempotency import create_payload_fingerprint
 
 router = APIRouter(
     prefix="/hooks",
@@ -42,6 +43,24 @@ async def recieve_webhook(
         )
     contract_valid = not contract_issues
 
+    payload_fingerprint = None
+    duplicate_of_id = None
+
+    if endpoint.duplicate_detection_enabled:
+        payload_fingerprint = create_payload_fingerprint(payload)
+
+        original_delivery=db.scalar(
+            select(Delivery).where(
+                Delivery.endpoint_id == endpoint.id,
+                Delivery.payload_fingerprint == payload_fingerprint,
+            )
+            .order_by(Delivery.received_at.asc())
+            .limit(1)
+        )
+
+        if original_delivery is not None:
+            duplicate_of_id = original_delivery.id
+
     delivery = Delivery(
         endpoint_id = endpoint.id,
         method=request.method,
@@ -49,6 +68,8 @@ async def recieve_webhook(
         payload=payload,
         contract_valid=contract_valid,
         contract_issues=contract_issues,
+        payload_fingerprint=payload_fingerprint,
+        duplicate_of_id=duplicate_of_id,
     )
 
     db.add(delivery)
@@ -69,6 +90,8 @@ async def recieve_webhook(
         "delivery_id": str(delivery.id),
         "forwarded": attempt.succeeded if attempt else None,
         "destination_status": attempt.status_code if attempt else None,
+        "duplicate": duplicate_of_id is not None,
+        "duplicate_of_id": str(duplicate_of_id) if duplicate_of_id else None,
     }
 
 

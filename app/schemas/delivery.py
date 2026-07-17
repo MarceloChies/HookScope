@@ -13,6 +13,7 @@ class DeliveryResponse(BaseModel):
     contract_valid: bool | None = None
     contract_issues: list[dict[str,str]] | None = None
     received_at: datetime
+    duplicate_of_id: uuid.UUID | None = None
     model_config = ConfigDict(
         from_attributes=True,
     )
