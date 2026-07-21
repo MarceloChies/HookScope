@@ -245,7 +245,6 @@
   }
 }
 
-
 .brand {
   display: flex;
   align-items: center;
@@ -256,4 +255,15 @@
   width: 28px;
   height: 28px;
   object-fit: contain;
+}
+
+.endpoint-card-link {
+  color: inherit;
+  display: block;
+  text-decoration: none;
+}
+
+.endpoint-card-link:hover .endpoint-card {
+  border-color: #9ca3af;
+  transform: translateY(-2px);
 }

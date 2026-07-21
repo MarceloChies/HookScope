@@ -1,4 +1,5 @@
 import {type SubmitEvent, useEffect, useState} from 'react'
+import {Link, Route, Routes, useParams} from 'react-router-dom'
 import './App.css'
 import hookscopelogo from './assets/hookscopelogo.png'
 
@@ -14,7 +15,7 @@ type Endpoint = {
 
 const API_URL = 'http://127.0.0.1:8000'
 
-function App(){
+function EndpointsPage(){
   const [endpoints, setEndpoints] = useState<Endpoint[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -142,6 +143,11 @@ async function createEndpoint(event: SubmitEvent<HTMLFormElement>) {
         {!isLoading && !errorMessage && endpoints.length > 0 && (
           <div className="endpoint-list">
             {endpoints.map((endpoint) => (
+                <Link
+                key={endpoint.id}
+                to={`/endpoints/${endpoint.id}`}
+                className="endpoint-card-link"
+                >
               <article className="endpoint-card" key={endpoint.id}>
                 <div>
                   <h3>{endpoint.name}</h3>
@@ -166,6 +172,7 @@ async function createEndpoint(event: SubmitEvent<HTMLFormElement>) {
                   {API_URL}/hooks/{endpoint.token}
                 </code>
               </article>
+              </Link>
             ))}
           </div>
         )}
@@ -226,4 +233,29 @@ async function createEndpoint(event: SubmitEvent<HTMLFormElement>) {
   )
 }
 
-export default App
+function EndpointDetailsPage(){
+  const {endpointId} = useParams()
+
+  return(
+    <main className="page-shell">
+      <h1>Endpoint details</h1>
+
+      <p>
+        Endpoint ID: <code>{endpointId}</code>
+      </p>
+    </main>
+  )
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<EndpointsPage />} />
+
+      <Route
+        path="/endpoints/:endpointId"
+        element={<EndpointDetailsPage />}
+      />
+    </Routes>
+  )
+}
